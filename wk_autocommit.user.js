@@ -4,6 +4,7 @@
 // @version      0.4.8
 // @description  Auto commit for Wanikani
 // @author       Johannes Mikulasch
+// @updated-by   Johannes Blaser
 // @match        http://www.wanikani.com/subjects/*
 // @match        https://www.wanikani.com/subjects/*
 // @match        http://www.wanikani.com/subject-lessons/*
@@ -11,6 +12,8 @@
 // @grant        none
 // @run-at       document-end
 // @license
+// @downloadURL https://update.greasyfork.org/scripts/16466/WK%20Auto%20Commit.user.js
+// @updateURL https://update.greasyfork.org/scripts/16466/WK%20Auto%20Commit.meta.js
 // ==/UserScript==
 
 /*
@@ -175,18 +178,15 @@ window.addEventListener("willShowNextQuestion", function(event) {
     const item = event.detail;
     const subject = item.subject;
     if (item.questionType === "meaning") {
-        expected_answers = expected_answers.concat(subject.meanings);
+        expected_answers = expected_answers.concat(subject.meanings.map((e) => e.text));
         const subjectSynonyms = (subject.id in synonyms) ? synonyms[subject.id] : [];
         expected_answers = expected_answers.concat(subjectSynonyms);
     } else if (item.questionType === "reading") {
         if (subject.type === 'Vocabulary') {
-            expected_answers = expected_answers.concat(subject.readings.map((e) => e.reading));
+            expected_answers = expected_answers.concat(subject.readings.map((e) => e.text));
         } else if (subject.type === 'Kanji') {
-            if (subject.primary_reading_type === 'kunyomi') {
-                expected_answers = expected_answers.concat(subject.kunyomi);
-            } else if (subject.primary_reading_type === 'onyomi') {
-                expected_answers = expected_answers.concat(subject.onyomi);
-            }
+          expected_answers = expected_answers.concat(
+            subject.readings.filter((e) => e.kind === "primary").map((e) => e.text));
         }
     }
 
@@ -197,4 +197,3 @@ window.addEventListener("willShowNextQuestion", function(event) {
 (function () {
     console.log('WK Auto Commit (a plugin for Wanikani): Initialized');
 })();
-
